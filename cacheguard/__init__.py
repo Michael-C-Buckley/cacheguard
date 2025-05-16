@@ -1,1 +1,1 @@
-from cache import Cache
+from cacheguard.cache import Cache

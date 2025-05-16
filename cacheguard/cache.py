@@ -10,7 +10,7 @@ class Cache:
     """Mechanism for sealing and protecting a dataset at rest for commiting to git"""
 
     def __init__(self, sops_file: str, file_type: SopsyInOutType):
-        self.sops_file = sops_file
+        self.sops_file = Path(sops_file)
         self.file_type = file_type
         self.data = {}
 
@@ -41,9 +41,13 @@ class Cache:
         try:
             raw_string = self.sops_reader.decrypt(to_dict=False)
         except:
-            new_path_name = f"{datetime.now}-{self.sops_file}.archive"
-            move(Path(self.sops_file), Path(new_path_name))
-            print(f"[CacheGuard] Warning: Cache JSON error - old cache potentially corrupt, creating new one, old one archived at {new_path_name}")
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            new_file_name = f"archive-{timestamp}-{self.sops_file.name}"
+            new_path = Path(self.sops_file.parent / new_file_name)
+            move(self.sops_file, new_path)
+            print(
+                f"[CacheGuard] Warning: Cache JSON error - old cache potentially corrupt or empty.\n - Created new one and archived original at: {new_path}"
+            )
             return  # The file was not valid and was empty or corrupt
         else:
             assert type(raw_string) == bytes
