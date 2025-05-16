@@ -1,7 +1,8 @@
 # Python tooling
+__pycache__/
+dist
 .venv
 .ruff_cache
-__pycache__/
 *.egg-info/
 
 # Local testing
