@@ -1,6 +1,9 @@
 from orjson import dumps, loads
 from sopsy import Sops, SopsyInOutType
 from os import path
+from pathlib import Path
+from shutil import move
+from datetime import datetime
 
 
 class Cache:
@@ -35,10 +38,17 @@ class Cache:
 
     def _load(self):
         """Unseal the dataset"""
-        raw_string = self.sops_reader.decrypt(to_dict=False)
-        assert type(raw_string) == bytes
-        decoded_string = raw_string.decode()
-        self.data = loads(decoded_string)
+        try:
+            raw_string = self.sops_reader.decrypt(to_dict=False)
+        except:
+            new_path_name = f"{datetime.now}-{self.sops_file}.archive"
+            move(Path(self.sops_file), Path(new_path_name))
+            print(f"[CacheGuard] Warning: Cache JSON error - old cache potentially corrupt, creating new one, old one archived at {new_path_name}")
+            return  # The file was not valid and was empty or corrupt
+        else:
+            assert type(raw_string) == bytes
+            decoded_string = raw_string.decode()
+            self.data = loads(decoded_string)
 
     def _save(self):
         """Write the dataset to the encrypted at-rest state"""
