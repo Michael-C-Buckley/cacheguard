@@ -1,0 +1,10 @@
+# Python tooling
+.venv
+.ruff_cache
+__pycache__/
+*.egg-info/
+
+# Local testing
+.sops.yaml
+scrap*
+secrets/
