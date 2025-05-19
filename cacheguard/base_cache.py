@@ -7,7 +7,6 @@ from enum import Enum
 from os import path
 from pathlib import Path
 from shutil import move
-from typing import cast
 
 
 class CacheType(Enum):
@@ -33,8 +32,8 @@ class BaseCache:
             created = False
         else:
             created = True
-            with open(sops_file, "a"):
-                pass
+            Path(sops_file).parent.mkdir(parents=True, exist_ok=True)
+            Path(sops_file).touch(exist_ok=True)
 
         # We want to ingest the data, not overwrite the file yet
         self.sops_reader: Sops = Sops(in_place=False, **sops_kwargs)
