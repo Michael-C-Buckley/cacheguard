@@ -1,12 +1,12 @@
-from sopsy import Sops, SopsyInOutType, SopsyUnparsableOutpoutTypeError
-
-
 # Python Modules
 from datetime import datetime
 from enum import Enum
 from os import path
 from pathlib import Path
 from shutil import move
+
+# Third-Party Modules
+from sopsy import Sops, SopsyInOutType, SopsyUnparsableOutpoutTypeError
 
 
 class CacheType(Enum):
@@ -17,14 +17,13 @@ class CacheType(Enum):
 class BaseCache:
     """Mechanism for sealing and protecting a dataset at rest for commiting to git"""
 
-    def __init__(self, sops_file: str, file_type: SopsyInOutType):
+    def __init__(self, sops_file: str):
         self.sops_file = Path(sops_file)
-        self.file_type = file_type
 
         sops_kwargs = {
             "file": self.sops_file,
-            "input_type": self.file_type,
-            "output_type": self.file_type,
+            "input_type": SopsyInOutType.BINARY,
+            "output_type": SopsyInOutType.BINARY,
         }
 
         # Dumnmy file creation, or else sops will throw exception

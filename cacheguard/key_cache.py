@@ -1,15 +1,16 @@
-from sopsy import SopsyInOutType
+# Project Modules
 from cacheguard.base_cache import BaseCache
 
+# Third-Party Modules
 from orjson import dumps, loads
 
 
 class KeyCache(BaseCache):
     """Key-Value edition of the Cache"""
 
-    def __init__(self, sops_file: str, file_type: SopsyInOutType):
+    def __init__(self, sops_file: str):
         self.data = {}
-        super().__init__(sops_file, file_type)
+        super().__init__(sops_file)
 
     def load(self) -> str:
         """Handle the data for key-values by loading with JSON"""

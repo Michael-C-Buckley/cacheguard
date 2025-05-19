@@ -4,16 +4,13 @@ from io import StringIO
 # Project Modules
 from cacheguard.base_cache import BaseCache
 
-# Third-Party Modules
-from sopsy import SopsyInOutType
-
 
 class TextCache(BaseCache):
     """Plain-text edition of the cache"""
 
-    def __init__(self, sops_file: str, file_type: SopsyInOutType):
+    def __init__(self, sops_file: str):
         self.buffer = StringIO()
-        super().__init__(sops_file, file_type)
+        super().__init__(sops_file)
 
     def load(self) -> str:
         """Handle the plain text version of the cache"""
