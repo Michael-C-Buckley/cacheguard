@@ -1,6 +1,21 @@
 # CacheGuard
 
-A simple and secure Python key-value store protected by [Sops](https://getsops.io/).
+A simple and secure Python datastore protected by [Sops](https://getsops.io/).
+
+Comes in two varieties: simple key-value and simple text stores.
+
+## Cache Types
+
+* `KeyCache` - Simple key-value store
+* `TextCache` - Simple text file store
+
+
+
+## Sops Integrations
+
+This project is powered by [Sopsy](https://github.com/nikaro/sopsy), which means all Sops tools will work with this project.
+
+At-rest files can be examined if they are decrypted by sops, without needing an active Python session.  The type of file is "binary" from a sops perspective, this fully encrypts the body where keys are also not visible without decrytpion.
 
 ## Requires
 
