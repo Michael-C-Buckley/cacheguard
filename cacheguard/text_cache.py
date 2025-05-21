@@ -8,8 +8,11 @@ from cacheguard.base_cache import BaseCache
 class TextCache(BaseCache):
     """Plain-text edition of the cache"""
 
-    def __init__(self, sops_file: str):
-        self.buffer = StringIO()
+    def __init__(self, sops_file: str, newline: str|None = None):
+        if newline:
+            self.buffer = StringIO(newline=newline)
+        else:
+            self.buffer = StringIO()
         super().__init__(sops_file)
 
     def load(self) -> str:
