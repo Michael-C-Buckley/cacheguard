@@ -9,3 +9,8 @@ dist
 .sops.yaml
 scrap*
 secrets/
+
+# Tooling
+.direnv
+.git
+.envrc
