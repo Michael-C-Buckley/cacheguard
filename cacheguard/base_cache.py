@@ -6,7 +6,7 @@ from pathlib import Path
 from shutil import move
 
 # Third-Party Modules
-from sopsy import Sops, SopsyInOutType, SopsyUnparsableOutpoutTypeError
+from sopsy import Sops, SopsyInOutType, SopsyError
 
 
 class CacheType(Enum):
@@ -15,7 +15,7 @@ class CacheType(Enum):
 
 
 class BaseCache:
-    """Mechanism for sealing and protecting a dataset at rest for commiting to git"""
+    """Mechanism for sealing and protecting a dataset at rest for committing to git"""
 
     def __init__(self, sops_file: str):
         self.sops_file = Path(sops_file)
@@ -46,7 +46,7 @@ class BaseCache:
         """Unseal the dataset"""
         try:
             raw_string = self.sops_reader.decrypt(to_dict=False)
-        except (OSError, SopsyUnparsableOutpoutTypeError):
+        except (OSError, SopsyError):
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             new_file_name = f"archive-{timestamp}-{self.sops_file.name}"
             new_path = Path(self.sops_file.parent / new_file_name)
