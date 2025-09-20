@@ -15,7 +15,7 @@ Comes in two varieties: simple key-value and simple text stores.
 
 This project is powered by [Sopsy](https://github.com/nikaro/sopsy), which means all Sops tools will work with this project.
 
-At-rest files can be examined if they are decrypted by sops, without needing an active Python session.  The type of file is "binary" from a sops perspective, this fully encrypts the body where keys are also not visible without decrytpion.
+At-rest files can be examined if they are decrypted by sops, without needing an active Python session.  The type of file is "binary" from a sops perspective, this fully encrypts the body where keys are also not visible without decryption.
 
 ## Requires
 
@@ -27,7 +27,7 @@ For assistance with Sops, see their [documentation](https://getsops.io/docs/).
 
 This modules protects data at rest.  It does not protect data at run time.  It may be possible for other modules/processes/logging/etc to view it.
 
-Potenmtially useful for operational caches and other sensitive record keeping that needs to be local and transferred via git.
+Potentially useful for operational caches and other sensitive record keeping that needs to be local and transferred via git.
 
 ## Examples
 
