@@ -17,8 +17,9 @@ class CacheType(Enum):
 class BaseCache:
     """Mechanism for sealing and protecting a dataset at rest for committing to git"""
 
-    def __init__(self, sops_file: str):
+    def __init__(self, sops_file: str, sops_class=None):
         self.sops_file = Path(sops_file)
+        self._sops_class = sops_class or Sops
 
         sops_kwargs = {
             "file": self.sops_file,
