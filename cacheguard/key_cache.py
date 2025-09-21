@@ -1,3 +1,6 @@
+# Python Modules
+from os import environ
+
 # Project Modules
 from cacheguard.base_cache import BaseCache
 
@@ -26,3 +29,14 @@ class KeyCache(BaseCache):
     def add(self, entry: dict):
         """Add a new entry"""
         self.data = {**self.data, **entry}
+
+    def load_env_var(self, env_var):
+        """Load a key-value pair into the environment from the cache"""
+        if not self.data.get(env_var):
+            raise KeyError("Key does not exist in Key Cache")
+        environ[env_var] = self.data[env_var]
+
+    def deploy(self):
+        """Load every key-value pair in this cache into the environment"""
+        for key in self.data.keys():
+            self.load_env_var(key)
