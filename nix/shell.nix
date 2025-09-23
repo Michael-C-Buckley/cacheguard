@@ -13,9 +13,7 @@ pkgs.mkShell {
     # Pre-commit
     lefthook
     typos
-    treefmt
     bandit
-    mypy
   ];
   env = {
     LD_LIBRARY_PATH = with pkgs;
@@ -25,11 +23,9 @@ pkgs.mkShell {
   };
 
   shellHook = ''
-    # Set locale to avoid Python locale warnings
     export LOCALE_ARCHIVE="${pkgs.glibcLocales}/lib/locale/locale-archive"
     export LC_ALL="C.UTF-8"
     export UV_LINK_MODE=copy
-    git fetch
-    git status --short --branch
+    export UV_PROJECT_ENVIRONMENT="$VIRTUAL_ENV"
   '';
 }
