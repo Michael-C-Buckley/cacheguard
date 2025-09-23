@@ -1,6 +1,7 @@
 {pkgs ? import <nixpkgs> {}}:
 pkgs.mkShell {
   buildInputs = with pkgs; [
+
     # Python
     python313
     python313Packages.pip
@@ -8,6 +9,7 @@ pkgs.mkShell {
     ruff
     gcc
     pkg-config
+
     # Pre-commit
     lefthook
     typos
@@ -26,5 +28,8 @@ pkgs.mkShell {
     # Set locale to avoid Python locale warnings
     export LOCALE_ARCHIVE="${pkgs.glibcLocales}/lib/locale/locale-archive"
     export LC_ALL="C.UTF-8"
+    export UV_LINK_MODE=copy
+    git fetch
+    git status --short --branch
   '';
 }
