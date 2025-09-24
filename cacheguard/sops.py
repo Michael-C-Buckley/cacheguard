@@ -16,13 +16,16 @@ def encrypt(data: str, age_pubkeys: list = [], pgp_fingerprints: list = []) -> s
     """Encrypt a string using Sops, via either AGE and/or PGP"""
     sops_command = ["sops", "-e"]
 
-    if age_pubkeys:
-        # flatten the list into a string, then add it to the commands
-        sops_command += ["-a", ",".join(age_pubkeys)]
+    # flatten the list into a string, then add it to the commands
+    args_dict = {
+        "-a": age_pubkeys,
+        "-p": pgp_fingerprints,
+    }
 
-    if pgp_fingerprints:
-        # Same shaping is necessary
-        sops_command += ["-p", ",".join(pgp_fingerprints)]
+    for key, value in args_dict.items():
+        if not value:
+            continue
+        sops_command += [key, ",".join(value)]
 
     sops_command += ["/dev/stdin"]
 
