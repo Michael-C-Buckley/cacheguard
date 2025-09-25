@@ -1,11 +1,9 @@
 # Python Modules
+from json import dumps, loads
 from os import environ
 
 # Project Modules
 from cacheguard.base_cache import BaseCache
-
-# Third-Party Modules
-from orjson import dumps, loads
 
 
 class KeyCache(BaseCache):
@@ -29,7 +27,7 @@ class KeyCache(BaseCache):
 
     def save(self):
         """Write the dataset to the encrypted at-rest state"""
-        converted_string = dumps(self.data).decode()
+        converted_string = dumps(self.data)
         super().save(converted_string)
 
     def add(self, entry: dict):
