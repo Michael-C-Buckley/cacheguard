@@ -1,66 +1,63 @@
 # Python Modules
 from datetime import datetime
-from enum import Enum
 from os import path
 from pathlib import Path
 from shutil import move
 
-# Third-Party Modules
-from sopsy import Sops, SopsyInOutType, SopsyError
-
-
-class CacheType(Enum):
-    JSON = "json"
-    TEXT = "text"
+# Local Modules
+from cacheguard.sops import encrypt, decrypt
 
 
 class BaseCache:
-    """Mechanism for sealing and protecting a dataset at rest for committing to git"""
+    """Mechanism for sealing and protecting a dataset at rest"""
 
-    def __init__(self, sops_file: str, sops_class=None):
-        self.sops_file = Path(sops_file)
-        self._sops_class = sops_class or Sops
+    def __init__(
+        self,
+        sops_path: str,
+        age_pubkeys: list[str] = [],
+        pgp_fingerprints: list[str] = [],
+        *args,
+        **kwargs,
+    ) -> str:
+        self.age_pubkeys = age_pubkeys
+        self.pgp_fingerprints = pgp_fingerprints
+        self.sops_path = sops_path
 
-        sops_kwargs = {
-            "file": self.sops_file,
-            "input_type": SopsyInOutType.BINARY,
-            "output_type": SopsyInOutType.BINARY,
-        }
-
-        # Dumnmy file creation, or else sops will throw exception
-        if path.exists(sops_file):
-            created = False
-        else:
-            created = True
-            Path(sops_file).parent.mkdir(parents=True, exist_ok=True)
-            Path(sops_file).touch(exist_ok=True)
-
-        # We want to ingest the data, not overwrite the file yet
-        self.sops_reader: Sops = Sops(in_place=False, **sops_kwargs)
-        self.sops_writer: Sops = Sops(in_place=True, **sops_kwargs)
-
-        # only unseal if the file existed
-        if not created:
-            self.load()
+        return self.load() if path.exists(sops_path) else ""
 
     def load(self) -> str:
         """Unseal the dataset"""
         try:
-            raw_string = self.sops_reader.decrypt(to_dict=False)
-        except (OSError, SopsyError):
+            with open(self.sops_path) as f:
+                contents = f.read()
+            data = decrypt(contents)
+        except OSError:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            new_file_name = f"archive-{timestamp}-{self.sops_file.name}"
-            new_path = Path(self.sops_file.parent / new_file_name)
-            move(self.sops_file, new_path)
+            new_file_name = f"archive-{timestamp}-{self.sops_path.name}"
+            new_path = Path(self.sops_path.parent / new_file_name)
+            move(self.sops_path, new_path)
             print(
                 f"[CacheGuard] Warning: Cache JSON error - old cache potentially corrupt or empty.\n - Created new one and archived original at: {new_path}"
             )
             return ""  # The file was not valid and was empty or corrupt
         else:
-            # we request only a bytes object, so that's all we get
-            output_string = raw_string.decode()  # type: ignore
-            return output_string
+            return data
 
-    def save(self) -> None:
+    def save(self, data_string) -> None:
         """Write the dataset to the encrypted at-rest state"""
-        self.sops_writer.encrypt()
+        encrypted_data = encrypt(data_string)
+
+        if not path.exists(self.sops_path):
+            # make it
+            Path(self.sops_path).parent.mkdir(parents=True, exist_ok=True)
+            Path(self.sops_path).touch(exist_ok=True)
+        with open(self.sops_path, "w") as f:
+            f.write(encrypted_data)
+
+    def add(self):
+        """"""
+        raise NotImplementedError("Incorrect cache type - method for Key Cache")
+
+    def append(self):
+        """"""
+        raise NotImplementedError("Incorrect cache type - method for Text Cache")
