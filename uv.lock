@@ -16,14 +16,6 @@ name = "cacheguard"
 version = "0.2.3"
 source = { editable = "." }
 
-[package.optional-dependencies]
-dev = [
-    { name = "icecream" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-mock" },
-]
-
 [package.dev-dependencies]
 dev = [
     { name = "icecream" },
@@ -33,13 +25,6 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "icecream", marker = "extra == 'dev'", specifier = ">=2.1.4" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.4.2" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=7.0.0" },
-    { name = "pytest-mock", marker = "extra == 'dev'", specifier = ">=3.15.1" },
-]
-provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
 dev = [

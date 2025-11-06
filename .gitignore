@@ -1,6 +1,7 @@
 # Python tooling
 __pycache__/
 dist
+.coverage
 .venv
 .pytest_cache
 .mypy_cache
