@@ -54,10 +54,10 @@ class BaseCache:
         with open(self.sops_path, "w") as f:
             f.write(encrypted_data)
 
-    def add(self):
+    def add(self, *args, **kwargs):
         """"""
         raise NotImplementedError("Incorrect cache type - method for Key Cache")
 
-    def append(self):
+    def append(self, *args, **kwargs):
         """"""
         raise NotImplementedError("Incorrect cache type - method for Text Cache")

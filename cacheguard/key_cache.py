@@ -15,14 +15,16 @@ class KeyCache(BaseCache):
         age_pubkeys: list[str] = [],
         pgp_fingerprints: list[str] = [],
     ):
-        self.data = super().__init__(sops_path, age_pubkeys, pgp_fingerprints)
+        super().__init__(sops_path, age_pubkeys, pgp_fingerprints)
+        if not self.data:
+            self.data = {}
 
-    def load(self) -> str:
+    def load(self) -> dict:
         """Handle the data for key-values by loading with JSON"""
         if obtained_data := super().load():
             self.data = loads(obtained_data)
         else:
-            self.data = ""
+            self.data = {}
         return self.data
 
     def save(self):
