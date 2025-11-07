@@ -1,7 +1,7 @@
 [project]
 name = "cacheguard"
 version = "0.2.4"
-description = "A simple secure Python key-value store protected by Sops"
+description = "A simple, secure Python datastore protected by Sops"
 authors = [
     {name = "Michael Buckley", email = "michaelcbuckley@proton.me"}
 ]
