@@ -4,11 +4,4 @@ Here is a basic provided nix shell for development.  I use it as a NixOS develop
 
 ## Suggested `.envrc`
 
-Here is a simple Direnv hook to use the development environment here.
-
-```
-use flake
-layout python3
-export UV_PROJECT_ENVIRONMENT="$VIRTUAL_ENV"
-export UV_SYSTEM_PYTHON="1"
-```
+See `./config/README.md` for the `.envrc` file that I use.
