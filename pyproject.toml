@@ -1,6 +1,6 @@
 [project]
 name = "cacheguard"
-version = "0.2.3"
+version = "0.2.4"
 description = "A simple secure Python key-value store protected by Sops"
 authors = [
     {name = "Michael Buckley", email = "michaelcbuckley@proton.me"}
@@ -17,6 +17,7 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "icecream>=2.1.8",
+    "mutmut>=3.3.1",
     "pytest>=8.4.2",
     "pytest-cov>=7.0.0",
     "pytest-mock>=3.15.1",

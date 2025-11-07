@@ -18,12 +18,12 @@ class BaseCache:
         pgp_fingerprints: list[str] = [],
         *args,
         **kwargs,
-    ) -> str:
+    ) -> None:
         self.age_pubkeys = age_pubkeys
         self.pgp_fingerprints = pgp_fingerprints
         self.sops_path = sops_path
 
-        return self.load() if path.exists(sops_path) else ""
+        self.data = self.load() if path.exists(sops_path) else ""
 
     def load(self) -> str:
         """Unseal the dataset"""
@@ -33,8 +33,8 @@ class BaseCache:
             data = decrypt(contents)
         except OSError:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            new_file_name = f"archive-{timestamp}-{self.sops_path.name}"
-            new_path = Path(self.sops_path.parent / new_file_name)
+            new_file_name = f"archive-{timestamp}-{Path(self.sops_path).name}"
+            new_path = Path(self.sops_path).parent / new_file_name
             move(self.sops_path, new_path)
             print(
                 f"[CacheGuard] Warning: Cache JSON error - old cache potentially corrupt or empty.\n - Created new one and archived original at: {new_path}"
