@@ -1,13 +1,13 @@
 {pkgs ? import <nixpkgs> {}}:
-pkgs.mkShell {
+pkgs.mkShellNoCC {
   buildInputs = with pkgs; [
     # Project Dependency
     sops
 
     # Python
     python313
-    python313Packages.pip
     uv
+    ty
     ruff
     gcc
     pkg-config
