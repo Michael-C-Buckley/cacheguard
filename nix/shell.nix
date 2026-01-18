@@ -2,6 +2,7 @@
 pkgs.mkShellNoCC {
   buildInputs = with pkgs; [
     # Project Dependency
+    age
     sops
 
     # Python
