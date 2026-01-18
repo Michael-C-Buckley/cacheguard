@@ -13,9 +13,10 @@ class TextCache(BaseCache):
         sops_path: str,
         age_pubkeys: list[str] = [],
         pgp_fingerprints: list[str] = [],
+        backend: str = "sops",
         newline: str = "\n",
     ):
-        super().__init__(sops_path, age_pubkeys, pgp_fingerprints)
+        super().__init__(sops_path, age_pubkeys, pgp_fingerprints, backend)
         self.buffer = StringIO()
         self.newline = newline
 

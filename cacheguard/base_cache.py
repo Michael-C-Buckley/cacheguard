@@ -23,7 +23,7 @@ class BaseCache:
         cache_path: str,
         age_pubkeys: list[str] = [],
         pgp_fingerprints: list[str] = [],
-        backend: str = Backend.SOPS.value,
+        backend: str = "sops",
         *args,
         **kwargs,
     ) -> None:

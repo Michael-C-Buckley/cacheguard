@@ -7,15 +7,13 @@ from unittest.mock import mock_open, patch
 from pytest import fixture, mark, raises
 
 # Local Testing Libraries
-from test_common import decrypt_params, encrypt_params
+from test_common import (
+    decrypt_params,
+    encrypt_params,
+    set_age_env_var,  # noqa - this is a fixture
+)
 
 from cacheguard.base_cache import BaseCache
-
-
-@fixture(autouse=True)
-def set_age_env_var(monkeypatch):
-    """Set a dummy path to allow patched age calls to work"""
-    monkeypatch.setenv("CACHEGUARD_AGE_IDENTITY_PATH", "/home/pytest/age.keys")
 
 
 class TestBaseCache:

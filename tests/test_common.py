@@ -1,5 +1,13 @@
 # Tooling used for creating parameterized tests
 
+from pytest import fixture
+
+
+@fixture(autouse=True)
+def set_age_env_var(monkeypatch):
+    """Set a dummy path to allow patched age calls to work"""
+    monkeypatch.setenv("CACHEGUARD_AGE_IDENTITY_PATH", "/home/pytest/age.keys")
+
 
 def generate_params(key_str: str):
     """Generate params and use either encrypt or decrypt"""
