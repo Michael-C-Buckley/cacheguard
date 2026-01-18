@@ -1,7 +1,7 @@
 # Python Modules
 from datetime import datetime
 from enum import Enum
-from os import path
+from os import environ, path
 from pathlib import Path
 from shutil import move
 
@@ -30,6 +30,10 @@ class BaseCache:
         self.age_pubkeys = age_pubkeys
         self.pgp_fingerprints = pgp_fingerprints
         self.sops_path = sops_path
+
+        if backend not in Backend:
+            raise ValueError("Cacheguard caches only support 'age' or 'sops' backends.")
+
         self.backend = Backend(backend)
 
         if self.backend == Backend.AGE and pgp_fingerprints != []:
@@ -37,11 +41,18 @@ class BaseCache:
 
         self.data = self.load() if path.exists(sops_path) else ""
 
-    def decrypt(self, message: str, identity_path: str = "") -> str:
+    def decrypt(self, message: str, identity_path: str | None = "") -> str:
         """Simple wrapper for matching the decryption backend"""
         if self.backend == Backend.AGE:
+            if not identity_path:
+                identity_path = environ.get("CACHEGUARD_AGE_IDENTITY_PATH")
+                if not identity_path:
+                    raise ValueError(
+                        "Cacheguard age backend requires explicit age identity path passed for decryption or CACHEGUARD_AGE_IDENTITY_PATH environment variable set."
+                    )
             return age_decrypt(identity_path, message)
         else:
+            # TODO: check for Sops environment variables and/or add explicit identity
             return sops_decrypt(message)
 
     def encrypt(self, data: str) -> str:
