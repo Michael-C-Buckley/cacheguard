@@ -33,7 +33,7 @@ class TestTextCache:
             cache = TextCache(str(temp_path))
             assert cache.age_pubkeys == []  # nosec B101
             assert cache.pgp_fingerprints == []  # nosec B101
-            assert cache.sops_path == str(temp_path)  # nosec B101
+            assert cache.cache_path == str(temp_path)  # nosec B101
             assert cache.newline == "\n"  # nosec B101
             assert cache.buffer.getvalue() == ""  # nosec B101
 
@@ -47,7 +47,7 @@ class TestTextCache:
             cache = TextCache(str(temp_path))
             assert cache.age_pubkeys == []  # nosec B101
             assert cache.pgp_fingerprints == []  # nosec B101
-            assert cache.sops_path == str(temp_path)  # nosec B101
+            assert cache.cache_path == str(temp_path)  # nosec B101
             assert cache.newline == "\n"  # nosec B101
             # Should have appended the lines
             expected = "line1\nline2\nline3\n"

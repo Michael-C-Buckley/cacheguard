@@ -33,7 +33,7 @@ class TestBaseCache:
             cache = BaseCache(str(temp_path))
             assert cache.age_pubkeys == []  # nosec B101
             assert cache.pgp_fingerprints == []  # nosec B101
-            assert cache.sops_path == str(temp_path)  # nosec B101
+            assert cache.cache_path == str(temp_path)  # nosec B101
             assert cache.data == ""  # nosec B101
 
     def test_init_with_existing_file(self, temp_path, sample_data):
@@ -46,7 +46,7 @@ class TestBaseCache:
             cache = BaseCache(str(temp_path))
             assert cache.age_pubkeys == []  # nosec B101
             assert cache.pgp_fingerprints == []  # nosec B101
-            assert cache.sops_path == str(temp_path)  # nosec B101
+            assert cache.cache_path == str(temp_path)  # nosec B101
             assert cache.data == sample_data  # nosec B101
 
     def test_load_success(self, temp_path, sample_data, encrypted_data):

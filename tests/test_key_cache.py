@@ -38,7 +38,7 @@ class TestKeyCache:
             cache = KeyCache(str(temp_path))
             assert cache.age_pubkeys == []  # nosec B101
             assert cache.pgp_fingerprints == []  # nosec B101
-            assert cache.sops_path == str(temp_path)  # nosec B101
+            assert cache.cache_path == str(temp_path)  # nosec B101
             assert cache.data == {}  # nosec B101
 
     def test_init_with_existing_file(self, temp_path, sample_json):
@@ -51,7 +51,7 @@ class TestKeyCache:
             cache = KeyCache(str(temp_path))
             assert cache.age_pubkeys == []  # nosec B101
             assert cache.pgp_fingerprints == []  # nosec B101
-            assert cache.sops_path == str(temp_path)  # nosec B101
+            assert cache.cache_path == str(temp_path)  # nosec B101
             assert cache.data == {"key1": "value1", "key2": "value2"}  # nosec B101
 
     def test_load_success(self, temp_path, sample_json):

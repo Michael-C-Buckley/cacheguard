@@ -20,7 +20,7 @@ class BaseCache:
 
     def __init__(
         self,
-        sops_path: str,
+        cache_path: str,
         age_pubkeys: list[str] = [],
         pgp_fingerprints: list[str] = [],
         backend: str = Backend.SOPS.value,
@@ -29,7 +29,7 @@ class BaseCache:
     ) -> None:
         self.age_pubkeys = age_pubkeys
         self.pgp_fingerprints = pgp_fingerprints
-        self.sops_path = sops_path
+        self.cache_path = cache_path
 
         if backend not in Backend:
             raise ValueError("Cacheguard caches only support 'age' or 'sops' backends.")
@@ -39,7 +39,7 @@ class BaseCache:
         if self.backend == Backend.AGE and pgp_fingerprints != []:
             print("Cacheguard Warning: Age backend does not use PGP fingerprints")
 
-        self.data = self.load() if path.exists(sops_path) else ""
+        self.data = self.load() if path.exists(cache_path) else ""
 
     def decrypt(self, message: str, identity_path: str | None = "") -> str:
         """Simple wrapper for matching the decryption backend"""
@@ -65,14 +65,14 @@ class BaseCache:
     def load(self) -> str:
         """Unseal the dataset"""
         try:
-            with open(self.sops_path) as f:
+            with open(self.cache_path) as f:
                 contents = f.read()
             data = self.decrypt(contents)
         except OSError:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            new_file_name = f"archive-{timestamp}-{Path(self.sops_path).name}"
-            new_path = Path(self.sops_path).parent / new_file_name
-            move(self.sops_path, new_path)
+            new_file_name = f"archive-{timestamp}-{Path(self.cache_path).name}"
+            new_path = Path(self.cache_path).parent / new_file_name
+            move(self.cache_path, new_path)
             print(
                 f"[CacheGuard] Warning: Cache JSON error - old cache potentially corrupt or empty.\n - Created new one and archived original at: {new_path}"
             )
@@ -84,11 +84,11 @@ class BaseCache:
         """Write the dataset to the encrypted at-rest state"""
         encrypted_data = self.encrypt(data_string)
 
-        if not path.exists(self.sops_path):
+        if not path.exists(self.cache_path):
             # make it
-            Path(self.sops_path).parent.mkdir(parents=True, exist_ok=True)
-            Path(self.sops_path).touch(exist_ok=True)
-        with open(self.sops_path, "w") as f:
+            Path(self.cache_path).parent.mkdir(parents=True, exist_ok=True)
+            Path(self.cache_path).touch(exist_ok=True)
+        with open(self.cache_path, "w") as f:
             f.write(encrypted_data)
 
     def add(self, *args, **kwargs):
