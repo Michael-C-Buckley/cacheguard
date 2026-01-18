@@ -5,7 +5,7 @@ from pathlib import Path
 from shutil import move
 
 # Local Modules
-from cacheguard.sops import encrypt, decrypt
+from cacheguard.sops import sops_decrypt, sops_encrypt
 
 
 class BaseCache:
@@ -30,7 +30,7 @@ class BaseCache:
         try:
             with open(self.sops_path) as f:
                 contents = f.read()
-            data = decrypt(contents)
+            data = sops_decrypt(contents)
         except OSError:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             new_file_name = f"archive-{timestamp}-{Path(self.sops_path).name}"
@@ -45,7 +45,7 @@ class BaseCache:
 
     def save(self, data_string) -> None:
         """Write the dataset to the encrypted at-rest state"""
-        encrypted_data = encrypt(data_string)
+        encrypted_data = sops_encrypt(data_string)
 
         if not path.exists(self.sops_path):
             # make it

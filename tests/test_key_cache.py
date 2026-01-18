@@ -2,9 +2,10 @@
 Tests for the KeyCache class
 """
 
+from unittest.mock import mock_open, patch
+
 import pytest
-from pathlib import Path
-from unittest.mock import patch, mock_open
+
 from cacheguard.key_cache import KeyCache
 
 
@@ -33,58 +34,65 @@ class TestKeyCache:
 
     def test_init_no_existing_file(self, temp_path):
         """Test initialization when cache file doesn't exist"""
-        with patch('cacheguard.base_cache.path.exists', return_value=False):
+        with patch("cacheguard.base_cache.path.exists", return_value=False):
             cache = KeyCache(str(temp_path))
-            assert cache.age_pubkeys == []
-            assert cache.pgp_fingerprints == []
-            assert cache.sops_path == str(temp_path)
-            assert cache.data == {}
+            assert cache.age_pubkeys == []  # nosec B101
+            assert cache.pgp_fingerprints == []  # nosec B101
+            assert cache.sops_path == str(temp_path)  # nosec B101
+            assert cache.data == {}  # nosec B101
 
     def test_init_with_existing_file(self, temp_path, sample_json):
         """Test initialization when cache file exists"""
-        with patch('cacheguard.base_cache.path.exists', return_value=True), \
-             patch('builtins.open', mock_open(read_data="dummy")), \
-             patch('cacheguard.base_cache.decrypt', return_value=sample_json):
+        with (
+            patch("cacheguard.base_cache.path.exists", return_value=True),
+            patch("builtins.open", mock_open(read_data="dummy")),
+            patch("cacheguard.base_cache.sops_decrypt", return_value=sample_json),
+        ):
             cache = KeyCache(str(temp_path))
-            assert cache.age_pubkeys == []
-            assert cache.pgp_fingerprints == []
-            assert cache.sops_path == str(temp_path)
-            assert cache.data == {"key1": "value1", "key2": "value2"}
+            assert cache.age_pubkeys == []  # nosec B101
+            assert cache.pgp_fingerprints == []  # nosec B101
+            assert cache.sops_path == str(temp_path)  # nosec B101
+            assert cache.data == {"key1": "value1", "key2": "value2"}  # nosec B101
 
     def test_load_success(self, temp_path, sample_json):
         """Test successful loading of cache data"""
         cache = KeyCache(str(temp_path))
-        with patch('builtins.open', mock_open(read_data="encrypted")), \
-             patch('cacheguard.base_cache.decrypt', return_value=sample_json):
+        with (
+            patch("builtins.open", mock_open(read_data="encrypted")),
+            patch("cacheguard.base_cache.sops_decrypt", return_value=sample_json),
+        ):
             result = cache.load()
-            assert result == {"key1": "value1", "key2": "value2"}
-            assert cache.data == {"key1": "value1", "key2": "value2"}
+            assert result == {"key1": "value1", "key2": "value2"}  # nosec B101
+            assert cache.data == {"key1": "value1", "key2": "value2"}  # nosec B101
 
     def test_load_empty_data(self, temp_path):
         """Test loading when no data exists"""
         cache = KeyCache(str(temp_path))
-        with patch('builtins.open', side_effect=OSError("File error")), \
-             patch('cacheguard.base_cache.move') as mock_move:
+        with (
+            patch("builtins.open", side_effect=OSError("File error")),
+            patch("cacheguard.base_cache.move"),
+        ):
             result = cache.load()
-            assert result == {}
-            assert cache.data == {}
+            assert result == {}  # nosec B101
+            assert cache.data == {}  # nosec B101
 
     def test_save(self, temp_path, sample_data, encrypted_data):
         """Test save method"""
         cache = KeyCache(str(temp_path))
         cache.data = sample_data
 
-        with patch('cacheguard.base_cache.encrypt', return_value=encrypted_data), \
-             patch('cacheguard.base_cache.path.exists', return_value=True), \
-             patch('builtins.open', mock_open()) as mock_file:
-
+        with (
+            patch("cacheguard.base_cache.sops_encrypt", return_value=encrypted_data),
+            patch("cacheguard.base_cache.path.exists", return_value=True),
+            patch("builtins.open", mock_open()),
+        ):
             cache.save()
 
             # Should encrypt the JSON string
             expected_json = '{"key1": "value1", "key2": "value2"}'
             # Verify encrypt was called with JSON
             # Since we can't easily check the call, check that save was called on super
-            with patch('cacheguard.base_cache.BaseCache.save') as mock_super_save:
+            with patch("cacheguard.base_cache.BaseCache.save") as mock_super_save:
                 cache.save()
                 mock_super_save.assert_called_with(expected_json)
 
@@ -97,7 +105,7 @@ class TestKeyCache:
         cache.add(new_entry)
 
         expected = {"existing": "value", "new_key": "new_value", "another": "entry"}
-        assert cache.data == expected
+        assert cache.data == expected  # nosec B101
 
     def test_add_overwrites_existing(self, temp_path):
         """Test add method overwrites existing keys"""
@@ -106,16 +114,16 @@ class TestKeyCache:
 
         cache.add({"key1": "new_value"})
 
-        assert cache.data == {"key1": "new_value"}
+        assert cache.data == {"key1": "new_value"}  # nosec B101
 
     def test_load_env_var_success(self, temp_path):
         """Test loading environment variable successfully"""
         cache = KeyCache(str(temp_path))
         cache.data = {"TEST_VAR": "test_value"}
 
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict("os.environ", {}, clear=True):
             cache.load_env_var("TEST_VAR")
-            assert cache.data["TEST_VAR"] == "test_value"
+            assert cache.data["TEST_VAR"] == "test_value"  # nosec B101
 
     def test_load_env_var_not_found(self, temp_path):
         """Test loading non-existent environment variable raises KeyError"""
@@ -130,7 +138,7 @@ class TestKeyCache:
         cache = KeyCache(str(temp_path))
         cache.data = {"VAR1": "value1", "VAR2": "value2"}
 
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict("os.environ", {}, clear=True):
             cache.deploy()
-            assert cache.data["VAR1"] == "value1"
-            assert cache.data["VAR2"] == "value2"
+            assert cache.data["VAR1"] == "value1"  # nosec B101
+            assert cache.data["VAR2"] == "value2"  # nosec B101

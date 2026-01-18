@@ -2,9 +2,10 @@
 Tests for the TextCache class
 """
 
+from unittest.mock import mock_open, patch
+
 import pytest
-from pathlib import Path
-from unittest.mock import patch, mock_open
+
 from cacheguard.text_cache import TextCache
 
 
@@ -28,59 +29,68 @@ class TestTextCache:
 
     def test_init_no_existing_file(self, temp_path):
         """Test initialization when cache file doesn't exist"""
-        with patch('cacheguard.base_cache.path.exists', return_value=False):
+        with patch("cacheguard.base_cache.path.exists", return_value=False):
             cache = TextCache(str(temp_path))
-            assert cache.age_pubkeys == []
-            assert cache.pgp_fingerprints == []
-            assert cache.sops_path == str(temp_path)
-            assert cache.newline == "\n"
-            assert cache.buffer.getvalue() == ""
+            assert cache.age_pubkeys == []  # nosec B101
+            assert cache.pgp_fingerprints == []  # nosec B101
+            assert cache.sops_path == str(temp_path)  # nosec B101
+            assert cache.newline == "\n"  # nosec B101
+            assert cache.buffer.getvalue() == ""  # nosec B101
 
     def test_init_with_existing_file(self, temp_path, sample_data):
         """Test initialization when cache file exists"""
-        with patch('cacheguard.base_cache.path.exists', return_value=True), \
-             patch('builtins.open', mock_open(read_data="dummy")), \
-             patch('cacheguard.base_cache.decrypt', return_value=sample_data):
+        with (
+            patch("cacheguard.base_cache.path.exists", return_value=True),
+            patch("builtins.open", mock_open(read_data="dummy")),
+            patch("cacheguard.base_cache.sops_decrypt", return_value=sample_data),
+        ):
             cache = TextCache(str(temp_path))
-            assert cache.age_pubkeys == []
-            assert cache.pgp_fingerprints == []
-            assert cache.sops_path == str(temp_path)
-            assert cache.newline == "\n"
+            assert cache.age_pubkeys == []  # nosec B101
+            assert cache.pgp_fingerprints == []  # nosec B101
+            assert cache.sops_path == str(temp_path)  # nosec B101
+            assert cache.newline == "\n"  # nosec B101
             # Should have appended the lines
             expected = "line1\nline2\nline3\n"
-            assert cache.buffer.getvalue() == expected
+            assert cache.buffer.getvalue() == expected  # nosec B101
 
     def test_init_custom_newline(self, temp_path, sample_data):
         """Test initialization with custom newline"""
         custom_newline = "\r\n"
         sample_data_custom = "line1\r\nline2\r\nline3"
-        with patch('cacheguard.base_cache.path.exists', return_value=True), \
-             patch('builtins.open', mock_open(read_data="dummy")), \
-             patch('cacheguard.base_cache.decrypt', return_value=sample_data_custom):
+        with (
+            patch("cacheguard.base_cache.path.exists", return_value=True),
+            patch("builtins.open", mock_open(read_data="dummy")),
+            patch(
+                "cacheguard.base_cache.sops_decrypt", return_value=sample_data_custom
+            ),
+        ):
             cache = TextCache(str(temp_path), newline=custom_newline)
-            assert cache.newline == custom_newline
+            assert cache.newline == custom_newline  # nosec B101
             expected = "line1\r\nline2\r\nline3\r\n"
-            assert cache.buffer.getvalue() == expected
+            assert cache.buffer.getvalue() == expected  # nosec B101
 
     def test_load(self, temp_path, sample_data):
         """Test load method"""
         cache = TextCache(str(temp_path))
-        with patch('builtins.open', mock_open(read_data="encrypted")), \
-             patch('cacheguard.base_cache.decrypt', return_value=sample_data):
+        with (
+            patch("builtins.open", mock_open(read_data="encrypted")),
+            patch("cacheguard.base_cache.sops_decrypt", return_value=sample_data),
+        ):
             result = cache.load()
-            assert result == sample_data
+            assert result == sample_data  # nosec B101
             # Buffer should be reset to StringIO with data
-            assert cache.buffer.getvalue() == sample_data
+            assert cache.buffer.getvalue() == sample_data  # nosec B101
 
     def test_save_without_data_string(self, temp_path, encrypted_data):
         """Test save method without providing data_string"""
         cache = TextCache(str(temp_path))
         cache.buffer.write("test content\nmore content\n")
 
-        with patch('cacheguard.base_cache.encrypt', return_value=encrypted_data), \
-             patch('cacheguard.base_cache.path.exists', return_value=True), \
-             patch('builtins.open', mock_open()) as mock_file:
-
+        with (
+            patch("cacheguard.base_cache.sops_encrypt", return_value=encrypted_data),
+            patch("cacheguard.base_cache.path.exists", return_value=True),
+            patch("builtins.open", mock_open()),
+        ):
             cache.save()
 
             # Should encrypt the buffer content stripped
@@ -88,7 +98,7 @@ class TestTextCache:
             # Verify encrypt was called with stripped buffer content
             # Since we can't easily check the call, check that save was called on super
             # Actually, patch super().save
-            with patch('cacheguard.base_cache.BaseCache.save') as mock_super_save:
+            with patch("cacheguard.base_cache.BaseCache.save") as mock_super_save:
                 cache.save()
                 mock_super_save.assert_called_with(expected_data)
 
@@ -96,7 +106,7 @@ class TestTextCache:
         """Test save method with provided data_string"""
         cache = TextCache(str(temp_path))
 
-        with patch('cacheguard.base_cache.BaseCache.save') as mock_super_save:
+        with patch("cacheguard.base_cache.BaseCache.save") as mock_super_save:
             cache.save(sample_data)
             mock_super_save.assert_called_with(sample_data)
 
@@ -106,7 +116,7 @@ class TestTextCache:
         cache.append("first line")
         cache.append("second line")
         expected = "first line\nsecond line\n"
-        assert cache.buffer.getvalue() == expected
+        assert cache.buffer.getvalue() == expected  # nosec B101
 
     def test_append_custom_newline(self, temp_path):
         """Test append with custom newline"""
@@ -114,4 +124,4 @@ class TestTextCache:
         cache.append("first line")
         cache.append("second line")
         expected = "first line\r\nsecond line\r\n"
-        assert cache.buffer.getvalue() == expected
+        assert cache.buffer.getvalue() == expected  # nosec B101

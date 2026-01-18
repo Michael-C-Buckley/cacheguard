@@ -1,6 +1,6 @@
-from subprocess import run, CompletedProcess  # nosec B404
-from shutil import which
 from json import loads
+from shutil import which
+from subprocess import CompletedProcess, run  # nosec B404
 
 # This entire module will not function without Sops in the path
 if not (SOPS_BINARY := which("sops")):
@@ -12,7 +12,7 @@ def sops_execute(command, input) -> CompletedProcess:
     return run(command, input=input, capture_output=True, text=True, timeout=4)  # nosec B603
 
 
-def encrypt(data: str, age_pubkeys: list = [], pgp_fingerprints: list = []) -> str:
+def sops_encrypt(data: str, age_pubkeys: list = [], pgp_fingerprints: list = []) -> str:
     """Encrypt a string using Sops, via either AGE and/or PGP"""
     sops_command = ["sops", "-e"]
 
@@ -33,7 +33,7 @@ def encrypt(data: str, age_pubkeys: list = [], pgp_fingerprints: list = []) -> s
     return encrypted_data.stdout
 
 
-def decrypt(data) -> str:
+def sops_decrypt(data) -> str:
     """Simple decryption of an encrypted sops structure"""
     command = [SOPS_BINARY, "decrypt"]
     output = sops_execute(command, input=data)
@@ -42,7 +42,7 @@ def decrypt(data) -> str:
     return output.stdout
 
 
-def get_recipients(sops_data: str) -> dict[str, list]:
+def sops_get_recipients(sops_data: str) -> dict[str, list]:
     """Parse a sops structure for the recipients"""
     sops_dict = loads(sops_data)
 
@@ -70,6 +70,6 @@ def get_recipients(sops_data: str) -> dict[str, list]:
 
 def add_to_sops(new_data, sops_data):
     """Add new data to an existing sops structure while maintaining the recipients"""
-    recipients = get_recipients(sops_data)
-    new_data = decrypt(sops_data) + new_data
-    return encrypt(new_data, **recipients)
+    recipients = sops_get_recipients(sops_data)
+    new_data = sops_decrypt(sops_data) + new_data
+    return sops_encrypt(new_data, **recipients)

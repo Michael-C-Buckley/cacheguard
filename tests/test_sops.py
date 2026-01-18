@@ -3,7 +3,7 @@ Test for the `cacheguard.sops` module, which contains helper functions for
 interfacing with Sops via Subprocess
 """
 
-from cacheguard.sops import encrypt, get_recipients
+from cacheguard.sops import sops_encrypt, sops_get_recipients
 
 # These are dummy values
 TEST_AGE_PUBKEY = (
@@ -46,13 +46,13 @@ def test_encryption(mocker, monkeypatch):
         "timeout": 4,
     }
 
-    encrypt(**test_kwargs)
+    sops_encrypt(**test_kwargs)
 
     mock_run.assert_called_with(expected_call_args, **expected_call)
 
 
 def test_get_recipients():
-    result = get_recipients(SAMPLE_SOPS)
+    result = sops_get_recipients(SAMPLE_SOPS)
 
     expected_result = {
         "age_pubkeys": [TEST_AGE_PUBKEY],
