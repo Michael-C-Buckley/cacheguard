@@ -4,25 +4,34 @@ Tests for the BaseCache class
 
 from unittest.mock import mock_open, patch
 
-import pytest
+from pytest import fixture, mark, raises
+
+# Local Testing Libraries
+from test_common import decrypt_params, encrypt_params
 
 from cacheguard.base_cache import BaseCache
+
+
+@fixture(autouse=True)
+def set_age_env_var(monkeypatch):
+    """Set a dummy path to allow patched age calls to work"""
+    monkeypatch.setenv("CACHEGUARD_AGE_IDENTITY_PATH", "/home/pytest/age.keys")
 
 
 class TestBaseCache:
     """Test cases for BaseCache functionality"""
 
-    @pytest.fixture
+    @fixture
     def temp_path(self, tmp_path):
         """Create a temporary file path for testing"""
         return tmp_path / "test_cache.json"
 
-    @pytest.fixture
+    @fixture
     def sample_data(self):
         """Sample data for testing"""
         return '{"key": "value"}'
 
-    @pytest.fixture
+    @fixture
     def encrypted_data(self):
         """Sample encrypted data"""
         return "encrypted_content_here"
@@ -36,25 +45,31 @@ class TestBaseCache:
             assert cache.cache_path == str(temp_path)  # nosec B101
             assert cache.data == ""  # nosec B101
 
-    def test_init_with_existing_file(self, temp_path, sample_data):
+    @mark.parametrize("backend,decrypt_patch", decrypt_params())
+    def test_init_with_existing_file(
+        self, temp_path, sample_data, backend, decrypt_patch
+    ):
         """Test initialization when cache file exists"""
         with (
             patch("cacheguard.base_cache.path.exists", return_value=True),
             patch("builtins.open", mock_open(read_data="dummy")),
-            patch("cacheguard.base_cache.sops_decrypt", return_value=sample_data),
+            patch(decrypt_patch, return_value=sample_data),
         ):
-            cache = BaseCache(str(temp_path))
+            cache = BaseCache(str(temp_path), backend=backend)
             assert cache.age_pubkeys == []  # nosec B101
             assert cache.pgp_fingerprints == []  # nosec B101
             assert cache.cache_path == str(temp_path)  # nosec B101
             assert cache.data == sample_data  # nosec B101
 
-    def test_load_success(self, temp_path, sample_data, encrypted_data):
+    @mark.parametrize("backend,decrypt_patch", decrypt_params())
+    def test_load_success_sops(
+        self, temp_path, sample_data, encrypted_data, backend, decrypt_patch
+    ):
         """Test successful loading of cache data"""
-        cache = BaseCache(str(temp_path))
+        cache = BaseCache(str(temp_path), backend=backend)
         with (
             patch("builtins.open", mock_open(read_data=encrypted_data)),
-            patch("cacheguard.base_cache.sops_decrypt", return_value=sample_data),
+            patch(decrypt_patch, return_value=sample_data),
         ):
             result = cache.load()
             assert result == sample_data  # nosec B101
@@ -84,14 +99,15 @@ class TestBaseCache:
             # Should have printed the warning
             mock_print.assert_called_once()
 
+    @mark.parametrize("backend,encrypt_patch", encrypt_params())
     def test_save_creates_file_and_encrypts(
-        self, temp_path, sample_data, encrypted_data
+        self, temp_path, sample_data, encrypted_data, backend, encrypt_patch
     ):
         """Test save method encrypts data and writes to file"""
-        cache = BaseCache(str(temp_path))
+        cache = BaseCache(str(temp_path), backend=backend)
 
         with (
-            patch("cacheguard.base_cache.sops_encrypt", return_value=encrypted_data),
+            patch(encrypt_patch, return_value=encrypted_data),
             patch("cacheguard.base_cache.path.exists", return_value=False),
             patch("pathlib.Path.mkdir"),
             patch("pathlib.Path.touch"),
@@ -104,12 +120,15 @@ class TestBaseCache:
             mock_file.assert_called_with(str(temp_path), "w")
             mock_file().write.assert_called_with(encrypted_data)
 
-    def test_save_existing_file(self, temp_path, sample_data, encrypted_data):
+    @mark.parametrize("backend,encrypt_patch", encrypt_params())
+    def test_save_existing_file_sops(
+        self, temp_path, sample_data, encrypted_data, backend, encrypt_patch
+    ):
         """Test save method with existing file"""
-        cache = BaseCache(str(temp_path))
+        cache = BaseCache(str(temp_path), backend=backend)
 
         with (
-            patch("cacheguard.base_cache.sops_encrypt", return_value=encrypted_data),
+            patch(encrypt_patch, return_value=encrypted_data),
             patch("cacheguard.base_cache.path.exists", return_value=True),
             patch("builtins.open", mock_open()) as mock_file,
         ):
@@ -122,7 +141,7 @@ class TestBaseCache:
     def test_add_raises_not_implemented(self, temp_path):
         """Test that add method raises NotImplementedError"""
         cache = BaseCache(str(temp_path))
-        with pytest.raises(
+        with raises(
             NotImplementedError, match="Incorrect cache type - method for Key Cache"
         ):
             cache.add()
@@ -130,7 +149,7 @@ class TestBaseCache:
     def test_append_raises_not_implemented(self, temp_path):
         """Test that append method raises NotImplementedError"""
         cache = BaseCache(str(temp_path))
-        with pytest.raises(
+        with raises(
             NotImplementedError, match="Incorrect cache type - method for Text Cache"
         ):
             cache.append()
