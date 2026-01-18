@@ -24,12 +24,14 @@ class BaseCache:
         age_pubkeys: list[str] = [],
         pgp_fingerprints: list[str] = [],
         backend: str = "sops",
+        age_identity_path: str = "",
         *args,
         **kwargs,
     ) -> None:
         self.age_pubkeys = age_pubkeys
         self.pgp_fingerprints = pgp_fingerprints
         self.cache_path = cache_path
+        self.age_identity_path = age_identity_path
 
         if backend not in Backend:
             raise ValueError("Cacheguard caches only support 'age' or 'sops' backends.")
@@ -44,12 +46,21 @@ class BaseCache:
     def decrypt(self, message: str, identity_path: str | None = "") -> str:
         """Simple wrapper for matching the decryption backend"""
         if self.backend == Backend.AGE:
+            # Get a valid identity from one of the possible sources
+            for item in [
+                identity_path,
+                self.age_identity_path,
+                environ.get("CACHEGUARD_AGE_IDENTITY_PATH"),
+            ]:
+                if item:
+                    identity_path = item
+                    print(item)
+                    break
+
             if not identity_path:
-                identity_path = environ.get("CACHEGUARD_AGE_IDENTITY_PATH")
-                if not identity_path:
-                    raise ValueError(
-                        "Cacheguard age backend requires explicit age identity path passed for decryption or CACHEGUARD_AGE_IDENTITY_PATH environment variable set."
-                    )
+                raise ValueError(
+                    "Cacheguard age backend requires explicit age identity path passed for decryption or CACHEGUARD_AGE_IDENTITY_PATH environment variable set."
+                )
             return age_decrypt(identity_path, message)
         else:
             # TODO: check for Sops environment variables and/or add explicit identity

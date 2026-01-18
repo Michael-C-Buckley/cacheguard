@@ -15,8 +15,11 @@ class KeyCache(BaseCache):
         age_pubkeys: list[str] = [],
         pgp_fingerprints: list[str] = [],
         backend: str = "sops",
+        age_identity_path: str = "",
     ) -> None:
-        super().__init__(sops_path, age_pubkeys, pgp_fingerprints, backend)
+        super().__init__(
+            sops_path, age_pubkeys, pgp_fingerprints, backend, age_identity_path
+        )
         if not self.data:
             self.data = {}
 
