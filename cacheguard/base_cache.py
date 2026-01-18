@@ -1,11 +1,18 @@
 # Python Modules
 from datetime import datetime
+from enum import Enum
 from os import path
 from pathlib import Path
 from shutil import move
 
 # Local Modules
+from cacheguard.age import age_decrypt, age_encrypt
 from cacheguard.sops import sops_decrypt, sops_encrypt
+
+
+class Backend(Enum):
+    AGE = "age"
+    SOPS = "sops"
 
 
 class BaseCache:
@@ -16,21 +23,40 @@ class BaseCache:
         sops_path: str,
         age_pubkeys: list[str] = [],
         pgp_fingerprints: list[str] = [],
+        backend: str = Backend.SOPS.value,
         *args,
         **kwargs,
     ) -> None:
         self.age_pubkeys = age_pubkeys
         self.pgp_fingerprints = pgp_fingerprints
         self.sops_path = sops_path
+        self.backend = Backend(backend)
+
+        if self.backend == Backend.AGE and pgp_fingerprints != []:
+            print("Cacheguard Warning: Age backend does not use PGP fingerprints")
 
         self.data = self.load() if path.exists(sops_path) else ""
+
+    def decrypt(self, message: str, identity_path: str = "") -> str:
+        """Simple wrapper for matching the decryption backend"""
+        if self.backend == Backend.AGE:
+            return age_decrypt(identity_path, message)
+        else:
+            return sops_decrypt(message)
+
+    def encrypt(self, data: str) -> str:
+        """Simple wrapper for matching the encryption backend"""
+        if self.backend == Backend.AGE:
+            return age_encrypt(data, self.age_pubkeys)
+        else:
+            return sops_encrypt(data, self.age_pubkeys, self.pgp_fingerprints)
 
     def load(self) -> str:
         """Unseal the dataset"""
         try:
             with open(self.sops_path) as f:
                 contents = f.read()
-            data = sops_decrypt(contents)
+            data = self.decrypt(contents)
         except OSError:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             new_file_name = f"archive-{timestamp}-{Path(self.sops_path).name}"
@@ -45,7 +71,7 @@ class BaseCache:
 
     def save(self, data_string) -> None:
         """Write the dataset to the encrypted at-rest state"""
-        encrypted_data = sops_encrypt(data_string)
+        encrypted_data = self.encrypt(data_string)
 
         if not path.exists(self.sops_path):
             # make it
