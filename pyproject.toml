@@ -1,7 +1,7 @@
 [project]
 name = "cacheguard"
-version = "0.2.4"
-description = "A simple, secure Python datastore protected by Sops"
+version = "0.3.0"
+description = "A simple, secure Python datastore protected by Sops or Age"
 authors = [
     {name = "Michael Buckley", email = "michaelcbuckley@proton.me"}
 ]
@@ -22,4 +22,3 @@ dev = [
     "pytest-cov>=7.0.0",
     "pytest-mock>=3.15.1",
 ]
-
