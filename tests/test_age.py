@@ -1,3 +1,5 @@
+from shutil import which
+
 from pytest import fixture, mark, raises
 
 from cacheguard.age import age_decrypt, age_encrypt, age_execute
@@ -15,6 +17,12 @@ UDNhYzJ3bjJhbkJycTNSTkx4VXlzQTAKLS0tIFF3WmhsemZvVnNpamxxcjBCWGwv
 WGFtR0NNdHdKUTRGMDl0OWtlNXFOSmsKFT/n/Gl+D1aLZFpmKm/Xgxzdg13Kx3ek
 mOr7yDwkTwF2nvK7zfoltac9jq1g6bG3b4yssj/YHmesMwhjnfNsCRW25Gw=
 -----END AGE ENCRYPTED FILE-----"""
+
+
+# Age binary is required to run tests
+# TODO: specify age binary via environment
+if not which("age"):
+    raise RuntimeError("Age binary is required to run age backend test for Cacheguard")
 
 
 @fixture(scope="class")
