@@ -1,18 +1,16 @@
 {
   description = "CacheGuard Nix Flake";
 
-  outputs = {flake-parts, ...} @ inputs:
-    flake-parts.lib.mkFlake {inherit inputs;} {
-      systems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
+  inputs.nixpkgs.url = "https://channels.nixos.org/nixos-unstable/nixexprs.tar.xz";
 
-      perSystem = {pkgs, ...}: {
-        # NixOS specific DevShell that fixes pathing issues
-        devShells.default = import ./nix/shell.nix {inherit pkgs;};
-      };
-    };
-
-  inputs = {
-    nixpkgs.url = "https://channels.nixos.org/nixos-unstable/nixexprs.tar.xz";
-    flake-parts.url = "github:hercules-ci/flake-parts";
+  outputs = {nixpkgs, ...}: let
+    forAllSystems = nixpkgs.lib.genAttrs ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
+    nixpkgsFor = forAllSystems (system: import nixpkgs {inherit system;});
+  in {
+    devShells = forAllSystems (
+      system: {
+        default = import ./nix/shell.nix {pkgs = nixpkgsFor.${system};};
+      }
+    );
   };
 }
